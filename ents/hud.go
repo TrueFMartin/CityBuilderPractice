@@ -14,18 +14,22 @@ type HUD struct {
 	common.SpaceComponent
 }
 
+const (
+	hudWidth, hudHeight int = 300, 200
+)
+
 // AddHud Custom add method
 func AddHud(world *ecs.World) {
 	hud := HUD{}
 	hud.BasicEntity = ecs.NewBasic()
 	//goland:noinspection GoStructInitializationWithoutFieldNames
 	hud.SpaceComponent = common.SpaceComponent{
-		Position: engo.Point{0, engo.WindowHeight() - 200},
-		Width:    200,
-		Height:   200,
+		Position: engo.Point{0, engo.WindowHeight() - float32(hudHeight)},
+		Width:    float32(hudWidth),
+		Height:   float32(hudHeight),
 	}
 	hudImage := image.NewUniform(color.RGBA{205, 205, 205, 255})
-	hudNRGBA := common.ImageToNRGBA(hudImage, 200, 200)
+	hudNRGBA := common.ImageToNRGBA(hudImage, hudWidth, hudHeight)
 	hudImageObj := common.NewImageObject(hudNRGBA)
 	hudTexture := common.NewTextureSingle(hudImageObj)
 

@@ -68,6 +68,7 @@ type City struct {
 	ecs.BasicEntity
 	common.RenderComponent
 	common.SpaceComponent
+	timeBuilt, timeAlive float32
 }
 
 type MouseTracker struct {
@@ -80,6 +81,7 @@ type CityBuildingSystem struct {
 	usedTiles          []int
 	elapsed, buildTime float32
 	built              int
+	worldTime          float32
 }
 
 func (cb *CityBuildingSystem) New(w *ecs.World) {
@@ -108,6 +110,7 @@ func (cb *CityBuildingSystem) New(w *ecs.World) {
 func (cb *CityBuildingSystem) Update(dt float32) {
 	//add city at randomized times, prog. faster
 	cb.elapsed += dt
+	cb.worldTime += dt
 	if cb.elapsed >= cb.buildTime {
 		cb.generateCity()
 		cb.elapsed = 0
@@ -184,7 +187,7 @@ func (cb *CityBuildingSystem) generateCity() {
 			}
 		}
 	}
-
+	buildTimeTxt := fmt.Sprintf("Built at Gamehour: %.0f", cb.worldTime)
 	engo.Mailbox.Dispatch(HUDTextMessage{
 		BasicEntity: ecs.NewBasic(),
 		SpaceComponent: common.SpaceComponent{
@@ -194,7 +197,7 @@ func (cb *CityBuildingSystem) generateCity() {
 		},
 		MouseComponent: common.MouseComponent{},
 		Line1:          "Town",
-		Line2:          "Just built!",
+		Line2:          buildTimeTxt,
 		Line3:          "A town generates",
 		Line4:          "$100 per day.",
 	})

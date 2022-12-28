@@ -50,20 +50,23 @@ type HUDTextEntity struct {
 type HUDTextSystem struct {
 	text1, text2 Text
 	text3, text4 Text
+	currentTime  Text
 	money        Text
 	mouse        common.MouseComponent
 	entities     []HUDTextEntity
-	updateMoney  bool //Lets know if ammount of money has been updated
+	updateMoney  bool //Let us know if amount of money has been updated
 	amount       int  //keeps track of amount of money to display
+	gameTime     float32
 }
 
 func (hud *HUDTextSystem) New(w *ecs.World) {
 
 	setDefaultTextValues(w, &hud.text1, "Nothing Selected!", engo.WindowHeight()-200)
-	setDefaultTextValues(w, &hud.text2, "click on an element", engo.WindowHeight()-180)
+	setDefaultTextValues(w, &hud.text2, "hover on a town", engo.WindowHeight()-180)
 	setDefaultTextValues(w, &hud.text3, "to get info", engo.WindowHeight()-160)
 	setDefaultTextValues(w, &hud.text4, "about it", engo.WindowHeight()-140)
-	setDefaultTextValues(w, &hud.money, "$0", engo.WindowHeight()-40)
+	setDefaultTextValues(w, &hud.currentTime, "Time(hours): 0", engo.WindowHeight()-80)
+	setDefaultTextValues(w, &hud.money, "Available funds: $0", engo.WindowHeight()-40)
 
 	engo.Mailbox.Listen(HUDTextMessageType, func(m engo.Message) {
 		msg, ok := m.(HUDTextMessage)
@@ -102,7 +105,6 @@ func setDefaultTextValues(w *ecs.World, text *Text,
 	}
 	err := fnt.CreatePreloaded()
 	if err != nil {
-		fmt.Println("ERROR IN HUD TEXT")
 	}
 	text.BasicEntity = ecs.NewBasic()
 	text.RenderComponent.Drawable = common.Text{
@@ -130,8 +132,10 @@ func (hud *HUDTextSystem) Add(b *ecs.BasicEntity, s *common.SpaceComponent, m *c
 }
 
 func (hud *HUDTextSystem) Update(dt float32) {
+	hud.gameTime += dt
+	isHovering := false
 	for _, e := range hud.entities {
-		if e.MouseComponent.Clicked {
+		if e.MouseComponent.Hovered {
 			txt := hud.text1.RenderComponent.Drawable.(common.Text)
 			txt.Text = e.Line1
 			hud.text1.RenderComponent.Drawable = txt
@@ -144,12 +148,30 @@ func (hud *HUDTextSystem) Update(dt float32) {
 			txt = hud.text4.RenderComponent.Drawable.(common.Text)
 			txt.Text = e.Line4
 			hud.text4.RenderComponent.Drawable = txt
+			isHovering = true
+
 		}
 	}
-
+	if !isHovering {
+		txt := hud.text1.RenderComponent.Drawable.(common.Text)
+		txt.Text = "Nothing Selected!"
+		hud.text1.RenderComponent.Drawable = txt
+		txt = hud.text2.RenderComponent.Drawable.(common.Text)
+		txt.Text = "hover on a town"
+		hud.text2.RenderComponent.Drawable = txt
+		txt = hud.text3.RenderComponent.Drawable.(common.Text)
+		txt.Text = "to get info"
+		hud.text3.RenderComponent.Drawable = txt
+		txt = hud.text4.RenderComponent.Drawable.(common.Text)
+		txt.Text = "about it"
+		hud.text4.RenderComponent.Drawable = txt
+	}
+	txt := hud.currentTime.RenderComponent.Drawable.(common.Text)
+	txt.Text = fmt.Sprintf("Time(hours): %.0f", hud.gameTime)
+	hud.currentTime.RenderComponent.Drawable = txt
 	if hud.updateMoney {
 		txt := hud.money.RenderComponent.Drawable.(common.Text)
-		txt.Text = fmt.Sprintf("$%v", hud.amount)
+		txt.Text = fmt.Sprintf("Funds Available: $%v", hud.amount)
 		hud.money.RenderComponent.Drawable = txt
 	}
 }
