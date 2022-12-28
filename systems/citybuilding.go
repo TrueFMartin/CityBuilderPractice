@@ -114,7 +114,8 @@ func (cb *CityBuildingSystem) Update(dt float32) {
 		cb.updateBuildTime()
 		cb.built++
 	}
-
+	// This is for adding citys on mouse postion w/ F1 press
+	//#FIXME Removed for now, may add back later
 	//if engo.Input.Button("AddCity").JustPressed() {
 	//	fmt.Println("F1 Pressed")
 	//	fmt.Printf("\nWindow W: %f, Game W: %f, CanvasW: %f",
@@ -183,6 +184,24 @@ func (cb *CityBuildingSystem) generateCity() {
 			}
 		}
 	}
+
+	engo.Mailbox.Dispatch(HUDTextMessage{
+		BasicEntity: ecs.NewBasic(),
+		SpaceComponent: common.SpaceComponent{
+			Position: engo.Point{X: float32((x + 1) * 64), Y: float32((y + 1) * 64)},
+			Width:    64,
+			Height:   64,
+		},
+		MouseComponent: common.MouseComponent{},
+		Line1:          "Town",
+		Line2:          "Just built!",
+		Line3:          "A town generates",
+		Line4:          "$100 per day.",
+	})
+
+	engo.Mailbox.Dispatch(CityUpdateMessage{
+		New: CityTypeNew,
+	})
 }
 
 func (cb *CityBuildingSystem) isTileUsed(tile int) bool {

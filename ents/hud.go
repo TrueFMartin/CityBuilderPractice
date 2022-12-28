@@ -14,7 +14,7 @@ type HUD struct {
 	common.SpaceComponent
 }
 
-// Custom add method
+// AddHud Custom add method
 func AddHud(world *ecs.World) {
 	hud := HUD{}
 	hud.BasicEntity = ecs.NewBasic()
@@ -31,7 +31,7 @@ func AddHud(world *ecs.World) {
 
 	hud.RenderComponent = common.RenderComponent{
 		Drawable: hudTexture,
-		Scale:    engo.Point{1, 1},
+		Scale:    engo.Point{X: 1, Y: 1},
 		Repeat:   common.Repeat,
 	}
 	hud.RenderComponent.SetShader(common.HUDShader)

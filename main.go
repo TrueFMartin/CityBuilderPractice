@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
 	"github.com/TrueFMartin/engotut/ents"
 	"github.com/TrueFMartin/engotut/systems"
+	"golang.org/x/image/font/gofont/gosmallcaps"
 	"image/color"
 	"log"
 )
@@ -18,6 +20,7 @@ func (*myScene) Type() string {
 
 func (*myScene) Preload() {
 	err := engo.Files.Load("textures/citySheet.png", "tilemap/TrafficMap.tmx")
+	engo.Files.LoadReaderData("go.ttf", bytes.NewReader(gosmallcaps.TTF))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,6 +40,8 @@ func (*myScene) Setup(updater engo.Updater) {
 	world.AddSystem(&systems.CityBuildingSystem{})
 	//self created method
 	ents.AddHud(world)
+	world.AddSystem(&systems.HUDTextSystem{})
+	world.AddSystem(&systems.MoneySystem{})
 }
 
 func main() {
