@@ -83,6 +83,8 @@ func (h *HighwaySystem) Update(dt float32) {
 					sys.Add(&highway.BasicEntity, &highway.RenderComponent, &highway.SpaceComponent)
 				}
 			}
+			//update money Amount from cost of road
+			engo.Mailbox.Dispatch(RoadCostMessage{Amount: -50})
 		} else { //Position already filled by highway
 			ent := h.highways[possiblePositionIndex].BasicEntity
 			//remove entity from renderer
@@ -95,6 +97,8 @@ func (h *HighwaySystem) Update(dt float32) {
 			//remove highway from slice of highways
 			h.highways = append(h.highways[:possiblePositionIndex],
 				h.highways[possiblePositionIndex+1:]...)
+			//update money Amount from selling road
+			engo.Mailbox.Dispatch(RoadCostMessage{Amount: 50})
 		}
 	}
 }
@@ -110,4 +114,14 @@ func (h *HighwaySystem) isHighwayPresent(possibleP engo.Point) int {
 		}
 	}
 	return -1
+}
+
+type RoadCostMessage struct {
+	Amount int
+}
+
+const RoadCostMessageType string = "RoadCostMessage"
+
+func (RoadCostMessage) Type() string {
+	return RoadCostMessageType
 }

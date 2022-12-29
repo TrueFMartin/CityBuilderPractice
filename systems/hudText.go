@@ -30,7 +30,8 @@ func (HUDTextMessage) Type() string {
 }
 
 type HUDMoneyMessage struct {
-	Amount int
+	CurrentAmount    int
+	IncomePerTenHour int
 }
 
 const HUDMoneyMessageType string = "HUDMoneyMessage"
@@ -48,15 +49,18 @@ type HUDTextEntity struct {
 
 // HUDTextSystem system prints text to HUD
 type HUDTextSystem struct {
-	text1, text2 Text
-	text3, text4 Text
-	currentTime  Text
-	money        Text
-	mouse        common.MouseComponent
-	entities     []HUDTextEntity
-	updateMoney  bool //Let us know if amount of money has been updated
-	amount       int  //keeps track of amount of money to display
-	gameTime     float32
+	text1, text2  Text
+	text3, text4  Text
+	currentTime   Text
+	incomePerText Text
+	moneyText     Text
+	gameTime      float32
+	updateMoney   bool //Let us know if amount of money has been updated
+	moneyAmount   int  //keeps track of amount of money to display
+	incomePer     int
+	mouse         common.MouseComponent
+
+	entities []HUDTextEntity
 }
 
 func (hud *HUDTextSystem) New(w *ecs.World) {
@@ -65,8 +69,9 @@ func (hud *HUDTextSystem) New(w *ecs.World) {
 	setDefaultTextValues(w, &hud.text2, "hover on a town", engo.WindowHeight()-180)
 	setDefaultTextValues(w, &hud.text3, "to get info", engo.WindowHeight()-160)
 	setDefaultTextValues(w, &hud.text4, "about it", engo.WindowHeight()-140)
-	setDefaultTextValues(w, &hud.currentTime, "Time(hours): 0", engo.WindowHeight()-80)
-	setDefaultTextValues(w, &hud.money, "Available funds: $0", engo.WindowHeight()-40)
+	setDefaultTextValues(w, &hud.currentTime, "Time(hours): 0", engo.WindowHeight()-100)
+	setDefaultTextValues(w, &hud.incomePerText, "Income every 10hr: $0", engo.WindowHeight()-60)
+	setDefaultTextValues(w, &hud.moneyText, "Available funds: $0", engo.WindowHeight()-40)
 
 	engo.Mailbox.Listen(HUDTextMessageType, func(m engo.Message) {
 		msg, ok := m.(HUDTextMessage)
@@ -91,7 +96,8 @@ func (hud *HUDTextSystem) New(w *ecs.World) {
 		if !ok {
 			return
 		}
-		hud.amount = msg.Amount
+		hud.moneyAmount = msg.CurrentAmount
+		hud.incomePer = msg.IncomePerTenHour
 		hud.updateMoney = true
 	})
 }
@@ -169,10 +175,15 @@ func (hud *HUDTextSystem) Update(dt float32) {
 	txt := hud.currentTime.RenderComponent.Drawable.(common.Text)
 	txt.Text = fmt.Sprintf("Time(hours): %.0f", hud.gameTime)
 	hud.currentTime.RenderComponent.Drawable = txt
+
+	txt = hud.incomePerText.RenderComponent.Drawable.(common.Text)
+	txt.Text = fmt.Sprintf("Income every 10hr: $%v", hud.incomePer)
+	hud.incomePerText.RenderComponent.Drawable = txt
+
 	if hud.updateMoney {
-		txt := hud.money.RenderComponent.Drawable.(common.Text)
-		txt.Text = fmt.Sprintf("Funds Available: $%v", hud.amount)
-		hud.money.RenderComponent.Drawable = txt
+		txt := hud.moneyText.RenderComponent.Drawable.(common.Text)
+		txt.Text = fmt.Sprintf("Funds Available: $%v", hud.moneyAmount)
+		hud.moneyText.RenderComponent.Drawable = txt
 	}
 }
 

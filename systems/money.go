@@ -7,6 +7,7 @@ import (
 
 type MoneySystem struct {
 	amount                int
+	incomePer             int
 	towns, cities, metros int
 	officers              int
 	elapsed               float32
@@ -52,22 +53,34 @@ func (m *MoneySystem) New(w *ecs.World) {
 			oldRemove()
 		}
 	})
-
+	//On police officer add, update hudText
 	engo.Mailbox.Listen(AddOfficerMessageType, func(engo.Message) {
 		m.officers++
+	})
+	//Update amount of money every time road is built/removed
+	engo.Mailbox.Listen(RoadCostMessageType, func(msg engo.Message) {
+		update, ok := msg.(RoadCostMessage)
+		if !ok {
+			return
+		}
+		m.amount += update.Amount
 	})
 }
 
 func (m *MoneySystem) Update(dt float32) {
-	m.elapsed += dt
+	m.elapsed += dt //used to increase funds every 10 seconds
+	//Combine income from all units minus officers
+	m.incomePer = m.towns*100 + m.cities*500 + m.metros*1000 - m.officers*20
+	//every 10 seconds, apply income change
 	if m.elapsed > 10 {
-		m.amount += m.towns*100 + m.cities*500 + m.metros*1000
-		m.amount -= m.officers * 20
-		engo.Mailbox.Dispatch(HUDMoneyMessage{
-			Amount: m.amount,
-		})
+		m.amount += m.incomePer
 		m.elapsed = 0
 	}
+	//update HUD money display
+	engo.Mailbox.Dispatch(HUDMoneyMessage{
+		CurrentAmount:    m.amount,
+		IncomePerTenHour: m.incomePer,
+	})
 }
 
 func (m *MoneySystem) Remove(e ecs.BasicEntity) {}
