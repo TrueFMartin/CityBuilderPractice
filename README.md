@@ -12,4 +12,5 @@ Next I will be adding audio, traffic managment, and traffic visuals.
 To run game, clone the repository, and in terminal run:
 
 $go mod tidy
+
 $go mod run .
