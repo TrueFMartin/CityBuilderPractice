@@ -27,7 +27,9 @@ func (*myScene) Preload() {
 }
 
 func (*myScene) Setup(updater engo.Updater) {
-	engo.Input.RegisterButton("AddCity", engo.KeyF1)
+	engo.Input.RegisterButton("AddRoadVert", engo.KeyF1)
+	engo.Input.RegisterButton("AddRoadHoriz", engo.KeyF2)
+
 	common.SetBackground(color.White)
 	world, _ := updater.(*ecs.World)
 	world.AddSystem(&common.RenderSystem{})
@@ -40,8 +42,11 @@ func (*myScene) Setup(updater engo.Updater) {
 	world.AddSystem(&systems.CityBuildingSystem{})
 	//self created method
 	ents.AddHud(world)
+	world.AddSystem(&systems.GridSystem{})
 	world.AddSystem(&systems.HUDTextSystem{})
 	world.AddSystem(&systems.MoneySystem{})
+	world.AddSystem(&systems.HighwaySystem{})
+
 }
 
 func main() {

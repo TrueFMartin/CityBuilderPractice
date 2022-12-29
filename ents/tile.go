@@ -39,6 +39,7 @@ func AddTile(w *ecs.World) {
 				}
 				tiles = append(tiles, tile)
 			}
+
 		}
 	}
 

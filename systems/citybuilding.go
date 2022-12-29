@@ -68,7 +68,6 @@ type City struct {
 	ecs.BasicEntity
 	common.RenderComponent
 	common.SpaceComponent
-	timeBuilt, timeAlive float32
 }
 
 type MouseTracker struct {
@@ -120,8 +119,6 @@ func (cb *CityBuildingSystem) Update(dt float32) {
 	// This is for adding citys on mouse postion w/ F1 press
 	//#FIXME Removed for now, may add back later
 	//if engo.Input.Button("AddCity").JustPressed() {
-	//	fmt.Println("F1 Pressed")
-	//	fmt.Printf("\nWindow W: %f, Game W: %f, CanvasW: %f",
 	//		engo.WindowWidth(), engo.GameWidth(), engo.CanvasWidth())
 	//	city := City{BasicEntity: ecs.NewBasic()}
 	//	city.SpaceComponent = common.SpaceComponent{
