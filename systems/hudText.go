@@ -154,16 +154,16 @@ func (hud *HUDTextSystem) Update(dt float32) {
 	}
 	if !isHovering {
 		txt := hud.text1.RenderComponent.Drawable.(common.Text)
-		txt.Text = "Nothing Selected!"
+		txt.Text = "Hover on town for info"
 		hud.text1.RenderComponent.Drawable = txt
 		txt = hud.text2.RenderComponent.Drawable.(common.Text)
-		txt.Text = "hover on a town"
+		txt.Text = ""
 		hud.text2.RenderComponent.Drawable = txt
 		txt = hud.text3.RenderComponent.Drawable.(common.Text)
-		txt.Text = "to get info"
+		txt.Text = "Press F1,F2 to add"
 		hud.text3.RenderComponent.Drawable = txt
 		txt = hud.text4.RenderComponent.Drawable.(common.Text)
-		txt.Text = "about it"
+		txt.Text = "or remove highways"
 		hud.text4.RenderComponent.Drawable = txt
 	}
 	txt := hud.currentTime.RenderComponent.Drawable.(common.Text)

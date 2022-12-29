@@ -81,6 +81,6 @@ func (g *GridSystem) Remove(entity ecs.BasicEntity) {}
 
 func GetNearestPoint(p engo.Point) engo.Point {
 	x := int(p.X/64) * 64
-	y := int(p.X/64) * 64
+	y := int(p.Y/64) * 64
 	return engo.Point{X: float32(x), Y: float32(y)}
 }
