@@ -27,12 +27,13 @@ type HighwayEntity struct {
 }
 
 type HighwaySystem struct {
-	world        *ecs.World
-	mouseTracker MouseTracker
-	entities     []HighwayEntity
-	highways     []*Highway
-	vertTile     common.RenderComponent
-	horizTile    common.RenderComponent
+	world         *ecs.World
+	mouseTracker  MouseTracker
+	entities      []HighwayEntity
+	highways      []*Highway
+	vertTile      common.RenderComponent
+	horizTile     common.RenderComponent
+	toRemoveIndex int
 }
 
 func (h *HighwaySystem) New(w *ecs.World) {
@@ -40,6 +41,7 @@ func (h *HighwaySystem) New(w *ecs.World) {
 
 	h.horizTile.Drawable = Spritesheet.Cell(716)
 	h.horizTile.Scale = engo.Point{X: 64 / 16, Y: 64 / 16}
+
 	h.vertTile.Drawable = Spritesheet.Cell(753)
 	h.vertTile.Scale = engo.Point{X: 64 / 16, Y: 64 / 16}
 	h.mouseTracker.BasicEntity = ecs.NewBasic()
@@ -54,16 +56,17 @@ func (h *HighwaySystem) New(w *ecs.World) {
 }
 
 func (h *HighwaySystem) Update(dt float32) {
-	//fmt.Println(h.mouseTracker.MouseX, " ", h.mouseTracker.MouseY)
+	//If user inputs F1 or F2, add/remove road
 	if engo.Input.Button("AddRoadVert").JustPressed() ||
 		engo.Input.Button("AddRoadHoriz").JustPressed() {
+		//get nearest grid intersection point to mouse position on F1/F2 input
 		position := GetNearestPoint(engo.Point{
 			X: h.mouseTracker.MouseX,
 			Y: h.mouseTracker.MouseY,
 		})
-
+		//check if already road at position, if not add road, else remove
 		possiblePositionIndex := h.isHighwayPresent(position)
-		if possiblePositionIndex == -1 {
+		if possiblePositionIndex == -1 { //-1 means no road present at position
 			highway := Highway{BasicEntity: ecs.NewBasic()}
 			highway.SpaceComponent = common.SpaceComponent{
 				Position: position,
@@ -77,6 +80,7 @@ func (h *HighwaySystem) Update(dt float32) {
 				highway.RenderComponent = h.horizTile
 			}
 			h.highways = append(h.highways, &highway)
+
 			for _, system := range h.world.Systems() {
 				switch sys := system.(type) {
 				case *common.RenderSystem:
@@ -85,25 +89,41 @@ func (h *HighwaySystem) Update(dt float32) {
 			}
 			//update money Amount from cost of road
 			engo.Mailbox.Dispatch(RoadCostMessage{Amount: -50})
+			//let path manager know about new road
+			engo.Mailbox.Dispatch(UpdatePointMessage{
+				point:     highway.Position,
+				pointType: PointTypeRoad,
+				isAdding:  true,
+			})
 		} else { //Position already filled by highway
 			ent := h.highways[possiblePositionIndex].BasicEntity
-			//remove entity from renderer
-			for _, system := range h.world.Systems() {
-				switch sys := system.(type) {
-				case *common.RenderSystem:
-					sys.Remove(ent)
-				}
-			}
-			//remove highway from slice of highways
-			h.highways = append(h.highways[:possiblePositionIndex],
-				h.highways[possiblePositionIndex+1:]...)
-			//update money Amount from selling road
-			engo.Mailbox.Dispatch(RoadCostMessage{Amount: 50})
+			h.toRemoveIndex = possiblePositionIndex
+			h.Remove(ent)
 		}
 	}
 }
 
-func (h *HighwaySystem) Remove(ecs.BasicEntity) {}
+func (h *HighwaySystem) Remove(ent ecs.BasicEntity) {
+	//remove entity from renderer
+	for _, system := range h.world.Systems() {
+		switch sys := system.(type) {
+		case *common.RenderSystem:
+			sys.Remove(ent)
+		}
+	}
+	//remove highway from slice of highways
+	engo.Mailbox.Dispatch(UpdatePointMessage{
+		point:     h.highways[h.toRemoveIndex].Position,
+		pointType: PointTypeRoad,
+		isAdding:  false,
+	})
+	//remove highway from h.highways slice
+	h.highways = append(h.highways[:h.toRemoveIndex],
+		h.highways[h.toRemoveIndex+1:]...)
+	//update money Amount from selling road
+	engo.Mailbox.Dispatch(RoadCostMessage{Amount: 50})
+
+}
 
 // checks each highway for matching point, if found, returns index, else -1
 func (h *HighwaySystem) isHighwayPresent(possibleP engo.Point) int {

@@ -46,6 +46,8 @@ func (*myScene) Setup(updater engo.Updater) {
 	world.AddSystem(&systems.HUDTextSystem{})
 	world.AddSystem(&systems.MoneySystem{})
 	world.AddSystem(&systems.HighwaySystem{})
+	world.AddSystem(&systems.PathSystem{})
+	world.AddSystem(&systems.OutlineSystem{})
 
 }
 

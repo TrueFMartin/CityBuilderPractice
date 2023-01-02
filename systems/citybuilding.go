@@ -78,6 +78,7 @@ type CityBuildingSystem struct {
 	world              *ecs.World
 	mouseTracker       MouseTracker
 	usedTiles          []int
+	cityLocations      []engo.Point
 	elapsed, buildTime float32
 	built              int
 	worldTime          float32
@@ -116,34 +117,6 @@ func (cb *CityBuildingSystem) Update(dt float32) {
 		cb.updateBuildTime()
 		cb.built++
 	}
-	// This is for adding citys on mouse postion w/ F1 press
-	//#FIXME Removed for now, may add back later
-	//if engo.Input.Button("AddCity").JustPressed() {
-	//		engo.WindowWidth(), engo.GameWidth(), engo.CanvasWidth())
-	//	city := City{BasicEntity: ecs.NewBasic()}
-	//	city.SpaceComponent = common.SpaceComponent{
-	//		Position: engo.Point{
-	//			X: cb.mouseTracker.MouseX,
-	//			Y: cb.mouseTracker.MouseY,
-	//		},
-	//		Width:  30,
-	//		Height: 64,
-	//	}
-	//	texture, err := common.LoadedSprite("textures/citySheet.png")
-	//	if err != nil {
-	//		log.Println("Load Texture failed: " + err.Error())
-	//	}
-	//	city.RenderComponent = common.RenderComponent{
-	//		Scale:    engo.Point{X: 0.1, Y: 0.1},
-	//		Drawable: texture,
-	//	}
-	//	for _, system := range cb.world.Systems() {
-	//		switch sys := system.(type) {
-	//		case *common.RenderSystem:
-	//			sys.Add(&city.BasicEntity, &city.RenderComponent, &city.SpaceComponent)
-	//		}
-	//	}
-	//}
 }
 
 func (*CityBuildingSystem) Remove(ecs.BasicEntity) {}
@@ -170,6 +143,7 @@ func (cb *CityBuildingSystem) generateCity() {
 				X: float32(((x+1)*64)+8) + float32(i*16),
 				Y: float32((y+1)*64) + float32(j*16),
 			}
+
 			tile.RenderComponent.Drawable = Spritesheet.Cell(cities[city][i+(3*j)])
 			tile.RenderComponent.SetZIndex(1)
 			cityTiles = append(cityTiles, tile)
@@ -198,7 +172,11 @@ func (cb *CityBuildingSystem) generateCity() {
 		Line3:          "A town generates",
 		Line4:          "$100 per day.",
 	})
-
+	engo.Mailbox.Dispatch(UpdatePointMessage{
+		point:     GetNearestPoint(cityTiles[0].SpaceComponent.Position),
+		pointType: PointTypeCity,
+		isAdding:  true,
+	})
 	engo.Mailbox.Dispatch(CityUpdateMessage{
 		New: CityTypeNew,
 	})
@@ -211,6 +189,7 @@ func (cb *CityBuildingSystem) isTileUsed(tile int) bool {
 		}
 	}
 	return false
+
 }
 
 func (cb *CityBuildingSystem) updateBuildTime() {
@@ -218,12 +197,9 @@ func (cb *CityBuildingSystem) updateBuildTime() {
 	case cb.built < 2:
 		// 10 to 15 seconds
 		cb.buildTime = 5*rand.Float32() + 10
-	case cb.built < 5:
-		// 60 to 90 seconds
-		cb.buildTime = 30*rand.Float32() + 60
 	case cb.built < 10:
-		// 30 to 90 seconds
-		cb.buildTime = 60*rand.Float32() + 30
+		// 10 to 40 seconds
+		cb.buildTime = 30*rand.Float32() + 10
 	case cb.built < 20:
 		// 30 to 65 seconds
 		cb.buildTime = 35*rand.Float32() + 30

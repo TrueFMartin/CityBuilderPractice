@@ -80,7 +80,21 @@ func (g *GridSystem) Update(dt float32) {}
 func (g *GridSystem) Remove(entity ecs.BasicEntity) {}
 
 func GetNearestPoint(p engo.Point) engo.Point {
+	switch {
+	case p.X < 0:
+		p.X = 0
+	case p.X > 1152:
+		p.X = 1152
+	}
+	switch {
+	case p.Y < 0:
+		p.Y = 0
+	case p.Y > 1152:
+		p.Y = 1152
+	}
+
 	x := int(p.X/64) * 64
 	y := int(p.Y/64) * 64
+
 	return engo.Point{X: float32(x), Y: float32(y)}
 }

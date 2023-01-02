@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/EngoEngine/ecs v1.0.5
 	github.com/EngoEngine/engo v1.0.8
+	golang.org/x/image v0.2.0
 )
 
 require (
@@ -25,7 +26,6 @@ require (
 	github.com/vulkan-go/glfw v0.0.0-20210402172934-58379a80228d // indirect
 	github.com/vulkan-go/vulkan v0.0.0-20221209234627-c0a353ae26c8 // indirect
 	golang.org/x/exp/shiny v0.0.0-20221217163422-3c43f8badb15 // indirect
-	golang.org/x/image v0.2.0 // indirect
 	golang.org/x/mobile v0.0.0-20221110043201-43a038452099 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/sys v0.3.0 // indirect
