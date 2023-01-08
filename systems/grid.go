@@ -79,7 +79,9 @@ func (g *GridSystem) Update(dt float32) {}
 
 func (g *GridSystem) Remove(entity ecs.BasicEntity) {}
 
+// GetNearestPoint returns nearest upper-left grid point
 func GetNearestPoint(p engo.Point) engo.Point {
+	//Make sure point isn't out of bounds of grid.
 	switch {
 	case p.X < 0:
 		p.X = 0

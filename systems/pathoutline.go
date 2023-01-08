@@ -18,14 +18,26 @@ type Outline struct {
 }
 
 // 20x20 matrix/grid/map of where each
-var colorMap [20][20]Outline
+var outlineMatrix [20][20]Outline
 
 // OutlineSystem Groups all outlines together, decides which display
 type OutlineSystem struct {
 	world      *ecs.World
-	outlines   []Outline
-	outlineRec Outline
+	outlineRec Outline //Just a base rectangle that individual outlines can copy
 }
+
+type Teal struct {
+	r, g, b, a uint8
+}
+
+var (
+	pathlessTownColor  = color.RGBA{0, 255, 255, 255} //teal
+	roadPathColor      = color.RGBA{240, 255, 0, 255} //yellow
+	divergentPathColor = color.RGBA{220, 0, 220, 255} // purple
+	townColor          = color.RGBA{0, 255, 0, 255}   //green
+	cityColor          = color.RGBA{0, 0, 255, 255}   //blue
+	metroColor         = color.RGBA{255, 0, 0, 255}   //red
+)
 
 const (
 	recBorderWidth float32 = 2
@@ -36,7 +48,7 @@ func (ol *OutlineSystem) New(w *ecs.World) {
 	ol.world = w
 	baseRect := common.Rectangle{
 		BorderWidth: recBorderWidth,
-		BorderColor: color.RGBA{0, 255, 255, 255}, //Create teal boundary on rec
+		BorderColor: pathlessTownColor, //Create teal boundary on rec
 	}
 	ol.outlineRec = Outline{} //All grid rect's will be based off this,
 	ol.outlineRec.SpaceComponent.Width = recSize
@@ -44,28 +56,29 @@ func (ol *OutlineSystem) New(w *ecs.World) {
 	ol.outlineRec.Drawable = baseRect
 	ol.outlineRec.Color = color.Transparent //Make inner rectangle transparent
 	ol.outlineRec.Hidden = true             // start hidden
-	ol.outlineRec.SetZIndex(11)             // draw ontop of regular grid
+	ol.outlineRec.SetZIndex(11)             // draw on top of regular grid
 
+	//Create and add each rectangle of matrix to rendersystem
 	for _, system := range ol.world.Systems() {
 		switch sys := system.(type) {
 		case *common.RenderSystem:
 			//Fill matrix w/ hidden, transparent, white-bordered rectangles
-			for r := 0; r < len(colorMap); r++ {
-				for c := 0; c < len(colorMap); c++ {
-					colorMap[r][c] = ol.outlineRec
-					colorMap[r][c].BasicEntity = ecs.NewBasic()
-					colorMap[r][c].Position = engo.Point{
+			for r := 0; r < len(outlineMatrix); r++ {
+				for c := 0; c < len(outlineMatrix); c++ {
+					outlineMatrix[r][c] = ol.outlineRec
+					outlineMatrix[r][c].BasicEntity = ecs.NewBasic()
+					outlineMatrix[r][c].Position = engo.Point{
 						X: float32(c * 64),
 						Y: float32(r * 64),
 					}
-					colorMap[r][c].row = r
-					colorMap[r][c].col = c
+					outlineMatrix[r][c].row = r
+					outlineMatrix[r][c].col = c
 
 					//FIXME May be better to only add matrix locations that have been activated
 					//Add that matrix point to render system(currently hidden)
-					sys.Add(&colorMap[r][c].BasicEntity,
-						&colorMap[r][c].RenderComponent,
-						&colorMap[r][c].SpaceComponent)
+					sys.Add(&outlineMatrix[r][c].BasicEntity,
+						&outlineMatrix[r][c].RenderComponent,
+						&outlineMatrix[r][c].SpaceComponent)
 				}
 			}
 		}
@@ -78,30 +91,27 @@ func (ol *OutlineSystem) New(w *ecs.World) {
 		}
 		r, c := msg.row, msg.col
 		if msg.color != nil {
-			baseRect := common.Rectangle{
+			tempRect := common.Rectangle{
 				BorderWidth: recBorderWidth,
-				BorderColor: msg.color, //Create teal boundary on rec
+				BorderColor: msg.color, //Change color of rect's border
 			}
-			//ol.outlineRec.Color = color.Transparent //Make inner rectangle transparent
-			colorMap[r][c].Drawable = baseRect
+			outlineMatrix[r][c].Drawable = tempRect
 		}
+
 		if msg.isAdding {
-			colorMap[r][c].Hidden = false
+			outlineMatrix[r][c].Hidden = false
 		} else {
-			colorMap[r][c].Hidden = true
+			outlineMatrix[r][c].Hidden = true
 		}
 
 	})
 }
-func (ol *OutlineSystem) Update(dt float32) {
-	if int(dt)%10 < 5 {
-		colorMap[1][1].BorderColor = color.RGBA{0, 0, 0, 255}
-	} else {
-		colorMap[1][1].BorderColor = color.RGBA{255, 255, 255, 255}
-	}
-}
+
+func (ol *OutlineSystem) Update(dt float32) {}
+
 func (ol *OutlineSystem) Remove(ecs.BasicEntity) {}
 
+// UpdateOutlineMessage Is dispatched whenever pathSystem adds/removes a path
 type UpdateOutlineMessage struct {
 	row, col int
 	isAdding bool

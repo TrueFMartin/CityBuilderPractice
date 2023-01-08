@@ -31,24 +31,24 @@ func (m *MoneySystem) New(w *ecs.World) {
 		//Removes old city from count
 		oldRemove := func() {
 			switch update.Old {
-			case CityTypeTown:
+			case pathTownLoc:
 				m.towns--
-			case CityTypeCity:
+			case pathCityLoc:
 				m.cities--
-			case CityTypeMetro:
+			case pathMetroLoc:
 				m.metros--
 			}
 		}
 		switch update.New {
-		case CityTypeNew:
+		case townLoc:
 			m.towns++
-		case CityTypeTown:
+		case pathTownLoc:
 			m.towns++
 			oldRemove()
-		case CityTypeCity:
+		case pathCityLoc:
 			m.cities--
 			oldRemove()
-		case CityTypeMetro:
+		case pathMetroLoc:
 			m.metros--
 			oldRemove()
 		}

@@ -89,7 +89,7 @@ func (cb *CityBuildingSystem) New(w *ecs.World) {
 	fmt.Println("CityBuildingSystem was added to Scene")
 
 	cb.mouseTracker.BasicEntity = ecs.NewBasic()
-	cb.mouseTracker.MouseComponent = common.MouseComponent{Track: true}
+	cb.mouseTracker.MouseComponent = common.MouseComponent{}
 
 	for _, system := range w.Systems() {
 		switch sys := system.(type) {
@@ -170,15 +170,15 @@ func (cb *CityBuildingSystem) generateCity() {
 		Line1:          "Town",
 		Line2:          buildTimeTxt,
 		Line3:          "A town generates",
-		Line4:          "$100 per day.",
+		Line4:          "$100 every 10hr.",
 	})
 	engo.Mailbox.Dispatch(UpdatePointMessage{
 		point:     GetNearestPoint(cityTiles[0].SpaceComponent.Position),
-		pointType: PointTypeCity,
+		pointType: PointTypeTown,
 		isAdding:  true,
 	})
 	engo.Mailbox.Dispatch(CityUpdateMessage{
-		New: CityTypeNew,
+		New: townLoc,
 	})
 }
 

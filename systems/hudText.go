@@ -58,7 +58,6 @@ type HUDTextSystem struct {
 	updateMoney   bool //Let us know if amount of money has been updated
 	moneyAmount   int  //keeps track of amount of money to display
 	incomePer     int
-	mouse         common.MouseComponent
 
 	entities []HUDTextEntity
 }
@@ -166,10 +165,10 @@ func (hud *HUDTextSystem) Update(dt float32) {
 		txt.Text = ""
 		hud.text2.RenderComponent.Drawable = txt
 		txt = hud.text3.RenderComponent.Drawable.(common.Text)
-		txt.Text = "Press F1,F2 to add"
+		txt.Text = "Click to buy($50)"
 		hud.text3.RenderComponent.Drawable = txt
 		txt = hud.text4.RenderComponent.Drawable.(common.Text)
-		txt.Text = "or remove highways"
+		txt.Text = "or sell highways"
 		hud.text4.RenderComponent.Drawable = txt
 	}
 	txt := hud.currentTime.RenderComponent.Drawable.(common.Text)

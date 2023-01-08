@@ -27,9 +27,6 @@ func (*myScene) Preload() {
 }
 
 func (*myScene) Setup(updater engo.Updater) {
-	engo.Input.RegisterButton("AddRoadVert", engo.KeyF1)
-	engo.Input.RegisterButton("AddRoadHoriz", engo.KeyF2)
-
 	common.SetBackground(color.White)
 	world, _ := updater.(*ecs.World)
 	world.AddSystem(&common.RenderSystem{})
@@ -53,7 +50,7 @@ func (*myScene) Setup(updater engo.Updater) {
 
 func main() {
 	opts := engo.RunOptions{
-		Title:          "Hello World",
+		Title:          "City Builder",
 		Width:          800,
 		Height:         800,
 		StandardInputs: true,
