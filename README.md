@@ -60,7 +60,7 @@ To run game, clone the repository, and in terminal run:
 
 This image shows a path between two cities. A path connecting to a city will receive a teal highlight.
 A path that breaks off from that original path will have a red/orange outline. 
-Roads can be built with F1 and F2 at mouse position. Will later add curved roads and different colors for incomplete paths, wider paths, ect.
+Roads can be built by clicking adjacent to a city or road while you have >= $50. Will later add different colors for incomplete paths, wider paths, ect.
 
 ![CityBuilderExample](https://user-images.githubusercontent.com/103139765/210197409-ede4c54c-5b6e-4974-a095-9e72ff0424c0.png)
 
