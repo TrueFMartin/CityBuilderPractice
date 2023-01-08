@@ -1,6 +1,7 @@
 package systems
 
 import (
+	"fmt"
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
@@ -63,7 +64,7 @@ func (h *HighwaySystem) Update(dt float32) {
 			X: h.mouseTracker.MouseX,
 			Y: h.mouseTracker.MouseY,
 		})
-		r, c := floatPointToPathInt(position)
+		c, r := floatPointToPathInt(position)
 
 		//check if already road at position, if not: add road, else remove
 		if h.highwayMatrix[r][c] == nil { //means there is no pointer to a highway at matrix point
@@ -78,22 +79,31 @@ func (h *HighwaySystem) Update(dt float32) {
 				highway.RenderComponent = h.highwayImage
 				highway.row = r
 				highway.col = c
-				h.highwayMatrix[r][c] = highway
+				tempPathLocation := pathMatrix[r][c]
+				adjacentLocations := getNonEmptyAdjacents(tempPathLocation)
+				//FIXME if road is later removed breaking path, this still returns true
+				//If there is a road/city adjacent to this location, add road
+				if len(adjacentLocations) > 0 {
+					h.highwayMatrix[r][c] = highway
 
-				for _, system := range h.world.Systems() {
-					switch sys := system.(type) {
-					case *common.RenderSystem:
-						sys.Add(&highway.BasicEntity, &highway.RenderComponent, &highway.SpaceComponent)
+					for _, system := range h.world.Systems() {
+						switch sys := system.(type) {
+						case *common.RenderSystem:
+							sys.Add(&highway.BasicEntity, &highway.RenderComponent, &highway.SpaceComponent)
+						}
 					}
+					//update money Amount from cost of road
+					engo.Mailbox.Dispatch(RoadCostMessage{Amount: -50})
+					//let path manager know about new road
+					engo.Mailbox.Dispatch(UpdatePointMessage{
+						point:     highway.Position,
+						pointType: PointTypeRoad,
+						isAdding:  true,
+					})
+				} else { //Meaning there were no adjacent locations allowing a road to be built
+					highway = nil
+					fmt.Println("No adjacent road/city, unable to build here")
 				}
-				//update money Amount from cost of road
-				engo.Mailbox.Dispatch(RoadCostMessage{Amount: -50})
-				//let path manager know about new road
-				engo.Mailbox.Dispatch(UpdatePointMessage{
-					point:     highway.Position,
-					pointType: PointTypeRoad,
-					isAdding:  true,
-				})
 			}
 
 		} else { //Position already filled by highway

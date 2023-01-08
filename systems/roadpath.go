@@ -183,7 +183,7 @@ func (ps *PathSystem) pathRoadToPath(adjacentRoad *pathMatrixLocation) {
 	//FIXME If I do this, never-mined defintely do this
 	//First check front of each existing path
 	for i, oldPath := range ps.paths {
-		//Adding new road to front of path
+		//Adding new road to front of paths
 		possibleLoc := validateListType(oldPath.Front())
 		if possibleLoc == adjacentRoad {
 			oldPath.PushFront(ps.newLocation)
@@ -355,6 +355,7 @@ func getNonEmptyAdjacents(location *pathMatrixLocation) (adjacents []*pathMatrix
 			adjacents = append(adjacents, v)
 		}
 	}
+	fmt.Println(adjacents)
 	return
 }
 
